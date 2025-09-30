@@ -1,0 +1,18 @@
+# ===== neoom: tables + flow rules + symmetric NAT/RDR using table <neoom_xlat_net> =====
+# Uses ($ext_if) for the external gateway address (from neoom.vars)
+# Uses ($lan_if) for the internal gateway address (from neoom.vars)
+# Uses table <neoom_mgmt_src>    for mgmt ranges (from neoom.vars)
+# Uses table <neoom_xlat_net>    for the mapped /24 (from neoom.vars)
+# Uses table <neoom_xlat_allow>  for list of external IPs allowed inbound (from neoom.vars)
+# Uses table <neoom_lan_allow>   for internal sources (transparent) (from neoom.vars)
+# Uses table <neoom_lan_natonly> for internal sources (outbound-only) (from neoom.vars)
+
+include "/etc/pf.conf.d/neoom.vars"
+#include "/etc/pf.conf.d/neoom.dynamic"
+
+# Inbound transparent mapping: external ? internal LAN network(s) of lan_if
+# Using $lan_if:network keeps this dynamic if LAN CIDR is ever changed
+#rdr on $ext_if inet from <neoom_mgmt_src> to <neoom_xlat_allow> -> $lan_if:network bitmask
+
+#rdr log on $ext_if inet from <neoom_mgmt_src> to 192.168.10.200 -> 192.168.137.200
+rdr log on $ext_if inet from any to 192.168.10.200 -> 192.168.137.200

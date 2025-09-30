@@ -1,0 +1,25 @@
+# runs before broad pass rules; restricts mgmt & mapped /24
+# Uses ($ext_if) for the external gateway address (from neoom.vars)
+# Uses $allowed_inbound_ports for open ports (from neoom.vars)
+# Uses table <neoom_mgmt_src> for mgmt ranges (from neoom.vars)
+# Uses table <neoom_xlat_net> for the mapped /24 (from neoom.vars)
+
+include "/etc/pf.conf.d/neoom.vars"
+include "/etc/pf.conf.d/neoom.dynamic"
+#
+#table <neoom_mgmt_src> persist file "/etc/pf.tables/neoom_mgmt_src"
+#table <neoom_xlat_net> persist file "/etc/pf.tables/neoom_xlat_net"
+#table <neoom_xlat_allow> persist file "/etc/pf.tables/neoom_xlat_allow"
+#table <neoom_lan_allow> persist file "/etc/pf.tables/neoom_lan_allow"
+#table <neoom_lan_natonly> persist file "/etc/pf.tables/neoom_lan_natonly"
+#table <neoom_ssh_abuse> persist
+
+# 1) only Management/VPN sources may access the PLC itself (SSH/HTTPS/Ping)
+block in quick on $ext_if from !<neoom_mgmt_src> to ($ext_if)
+pass in quick on $ext_if proto tcp from <neoom_mgmt_src> to ($ext_if) port $allowed_inbound_ports \
+     flags S/SA modulate state (max-src-conn-rate 30/5, overload <neoom_ssh_abuse> flush global)
+pass in quick on $ext_if inet proto icmp from <neoom_mgmt_src> to ($ext_if) icmp-type echoreq keep state
+block in quick on $ext_if from <neoom_ssh_abuse> to any
+
+# 2) Guardrail: only management may hit the mapped /24 at all
+block in quick on $ext_if from !<neoom_mgmt_src> to $xlat_net

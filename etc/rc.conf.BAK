@@ -1,0 +1,37 @@
+# common setting presets from Beckhoff
+zfs_enable="YES"
+dumpdev="AUTO"
+ntpd_enable="YES"
+pf_enable="YES"
+sshd_enable="YES"
+sendmail_enable="NO"
+sendmail_submit_enable="NO"
+sendmail_outbound_enable="NO"
+sendmail_msp_queue_enable="NO"
+allscreens_kbdflags="-b quiet.off"
+syslogd_flags="-ss"
+devfs_system_ruleset="allow_usb_mount"
+
+# Beckhoff/TwinCAT specific settings
+runonce_enable="YES"
+TcSystemService_enable="YES"
+CXID_enable="YES"
+MDPService_enable="YES"
+
+# rename network interface name to printed names (visible in Device Manager)
+ifconfig_igb0_name="X001"
+ifconfig_igb1_name="X000"
+
+# network settings
+dhcpcd_enable="YES"
+dhcpcd_flags="--clientid --hostname --waitip --denyinterfaces X000 --nogateway"
+
+# set host name (also in Device Manager)
+hostname="BTN-000f5gof"
+
+# activate German keyboard layout
+keymap="de.kbd"
+seatd_enable="YES"
+kld_list="i915kms"
+ifconfig_X000="inet 10.0.0.219 netmask 255.255.255.0"
+defaultrouter="10.0.0.1"

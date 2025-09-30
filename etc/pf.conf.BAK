@@ -1,0 +1,28 @@
+# Copyright (C) 2018 - 2021 Beckhoff Automation GmbH & Co. KG
+# Customized Packet Filter - /etc/pf.conf
+
+set skip on lo0
+scrub in all
+
+# allow dynamic NAT configuration (e.g. luemuctl)
+nat-anchor "bhf-nat/*"
+
+# allow dynamic port forwarding configuration (e.g. luemuctl)
+rdr-anchor "bhf-rdr/*"
+
+# block all incoming and allow all outgoing traffic
+block return in all
+pass out quick all
+
+# allow icmp6
+pass in quick proto icmp6 all
+
+# allow icmp4 (ping)
+pass in quick inet proto icmp all icmp-type { echoreq, unreach }
+
+# allow ssh
+pass in quick proto tcp to port ssh
+
+# allow dynamic configuration for Beckhoff specific services
+anchor bhf
+load anchor bhf from "/etc/pf.conf.d/bhf"
