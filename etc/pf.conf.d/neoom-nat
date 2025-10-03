@@ -8,10 +8,20 @@
 
 include "/etc/pf.conf.d/neoom.vars"
 include "/etc/pf.conf.d/neoom.dynamic"
+include "/etc/pf.conf.d/neoom.tables"
 
 # Outbound NAT (host-preserving): prefix-translate to mapped /24
 # NAT is done on packet egress on ext_if
 # bitmask forces a 1:1 ip translation
-nat log on $ext_if from <neoom_lan_allow>   to any -> $xlat_net bitmask
-nat log on $ext_if from <neoom_lan_natonly> to any -> $xlat_net bitmask
+#
+# does not work currently
+#nat log on $ext_if from <neoom_lan_allow>   to any -> $xlat_net bitmask
+#nat log on $ext_if from <neoom_lan_natonly> to any -> $xlat_net bitmask
 
+# same as above, only with fix ip
+# does not work currently
+#nat log on $ext_if from <neoom_lan_allow> to any -> 192.168.10.200 static-port
+
+# Alle Anfragen von intern erscheinen als Anfragen vom Gateway (Standard NAT)
+# works
+nat log on $ext_if from <neoom_lan_allow> to any -> ($ext_if)

@@ -9,24 +9,22 @@
 
 include "/etc/pf.conf.d/neoom.vars"
 include "/etc/pf.conf.d/neoom.dynamic"
+include "/etc/pf.conf.d/neoom.tables"
 
+# 1) only Management/VPN sources may access the PLC itself (SSH/HTTPS/Ping)
+block in quick on $ext_if from !<neoom_mgmt_src> to ($ext_if)
+pass in quick on $ext_if proto tcp from <neoom_mgmt_src> to ($ext_if) port $allowed_inbound_ports \
+     flags S/SA modulate state (max-src-conn-rate 30/5, overload <neoom_ssh_abuse> flush global)
+pass in quick on $ext_if inet proto icmp from <neoom_mgmt_src> to ($ext_if) icmp-type echoreq keep state
+block in quick on $ext_if from <neoom_ssh_abuse> to any
+
+# 2) Guardrail: only management may hit the mapped /24 at all
+block in quick on $ext_if from !<neoom_mgmt_src> to $xlat_net
 
 # Inbound: only mgmt ? explicitly allowed external IPs
 pass in log on $ext_if from <neoom_mgmt_src> to <neoom_xlat_allow> keep state
 
 # Outbound: allow internal sources that are enabled
 # "keep state" is necessary for NAT routing (see "nat on ..."-rules below)
-pass in log on $lan_if from { <neoom_lan_allow>, <neoom_lan_natonly> } to any keep state
+pass in log on $lan_if from <neoom_lan_allow> to any keep state
 
-# Outbound NAT (host-preserving): prefix-translate to mapped /24
-# NAT is done on packet egress on ext_if
-# bitmask forces a 1:1 ip translation
-#nat on $ext_if from <neoom_lan_allow>   to any -> <neoom_xlat_net> bitmask
-#nat on $ext_if from <neoom_lan_natonly> to any -> <neoom_xlat_net> bitmask
-
-# Inbound transparent mapping: external ? internal LAN network(s) of lan_if
-# Using $lan_if:network keeps this dynamic if LAN CIDR is ever changed
-#rdr on $ext_if inet from <neoom_mgmt_src> to <neoom_xlat_allow> -> $lan_if:network bitmask
-
-# Optional MSS clamping for VPN/PMTU quirks
-#match out on $ext_if proto tcp from any to any set tcp-mss 1360

@@ -1,0 +1,10 @@
+# variables, macros and tables for neoom routing
+
+# Tables (file-backed, survive reloads; keep definitions centralized here)
+table <neoom_mgmt_src>    persist file "/etc/pf.tables/neoom_mgmt_src"    # includes VPN/mgmt CIDRs
+table <neoom_xlat_allow>  persist file "/etc/pf.tables/neoom_xlat_allow"  # external IPs allowed inbound
+table <neoom_lan_allow>   persist file "/etc/pf.tables/neoom_lan_allow"   # internal sources (transparent)
+#table <neoom_lan_natonly> persist file "/etc/pf.tables/neoom_lan_natonly" # internal sources (outbound-only)
+
+# abuse/DoS helper table (empty at start; populated at runtime)
+table <neoom_ssh_abuse> persist
