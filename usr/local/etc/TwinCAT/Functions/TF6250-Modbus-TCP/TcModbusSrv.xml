@@ -1,0 +1,14 @@
+<Configuration>
+	<Port>502</Port>
+	<IpAddr></IpAddr>
+	<Mapping>
+		<OutputRegisters>
+			<MappingInfo>
+				<AdsPort>851</AdsPort>
+				<StartAddress>36000</StartAddress>
+				<EndAddress>46499</EndAddress>
+				<VarName>NGlobal.Com.Modbus.Raw</VarName>
+			</MappingInfo>
+		</OutputRegisters>
+	</Mapping>
+</Configuration>
