@@ -1,0 +1,43 @@
+#!/bin/sh
+# write ip range <PREFIX>.1-254 to a file
+# Usage: writeIpsToFile <PREFIX> <OUTPUT_FILE>
+# Example: writeIpsToFile 192.168.10 /etc/pf.tables/test
+
+set -eu
+
+usage() {
+  echo "Usage: $0 <PREFIX like 123.123.123> <OUTPUT_FILE>" >&2
+  exit 1
+}
+
+[ $# -eq 2 ] || usage
+PREFIX="$1"
+OUT="$2"
+
+# validation of prefix
+echo "$PREFIX" | awk -F. '
+  NF!=3 { exit 1 }
+  { for(i=1;i<=3;i++){ if($i!~/^[0-9]+$/ || $i<0 || $i>255) exit 1 } }
+  { exit 0 }
+' || { echo "Invalid prefix: $PREFIX (expected X.Y.Z)"; exit 2; }
+
+# Generator: nutze jot (FreeBSD) oder seq (Fallback)
+gen_hosts() {
+  if command -v jot >/dev/null 2>&1; then
+    jot 254 1 254
+  elif command -v seq >/dev/null 2>&1; then
+    seq 1 254
+  else
+    # letzter Fallback ohne jot/seq
+    i=1
+    while [ $i -le 254 ]; do echo "$i"; i=$((i+1)); done
+  fi
+}
+
+# schreiben
+: > "$OUT"
+for H in $(gen_hosts); do
+  echo "${PREFIX}.${H}" >> "$OUT"
+done
+
+echo "Wrote $(wc -l < "$OUT") addresses to $OUT"
